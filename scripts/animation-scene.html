@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 1440px; height: 810px; overflow: hidden; background: #000; }
+    canvas { display: block; }
+  </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer }   from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass }        from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass }   from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { ShaderPass }        from 'three/addons/postprocessing/ShaderPass.js';
+
+const W = 1440, H = 810;
+const canvas = document.getElementById('c');
+canvas.width  = W;
+canvas.height = H;
+canvas.style.width  = W + 'px';
+canvas.style.height = H + 'px';
+
+// ─── Renderer ───────────────────────────────────────────────
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+renderer.setSize(W, H, false);
+renderer.setPixelRatio(1);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+renderer.shadowMap.enabled = true;
+
+// ─── Scene ──────────────────────────────────────────────────
+const scene  = new THREE.Scene();
+scene.background = new THREE.Color(0x000804);
+scene.fog = new THREE.FogExp2(0x000804, 0.028);
+
+const camera = new THREE.PerspectiveCamera(62, W / H, 0.1, 180);
+
+// ─── Seeded RNG ─────────────────────────────────────────────
+let _seed = 1337;
+function rand() {
+  _seed = (_seed * 16807) % 2147483647;
+  return (_seed - 1) / 2147483646;
+}
+
+// ─── Hex Grid ───────────────────────────────────────────────
+const HEX_R  = 0.52;
+const GAP    = 0.06;
+const COLS   = 22;
+const ROWS   = 22;
+const W_STEP = HEX_R * 1.5 + GAP;
+const H_STEP = HEX_R * Math.sqrt(3) + GAP * 0.5;
+
+function hexShape(r) {
+  const s = new THREE.Shape();
+  for (let i = 0; i < 6; i++) {
+    const a = (Math.PI / 3) * i - Math.PI / 6;
+    const x = r * Math.cos(a), y = r * Math.sin(a);
+    i === 0 ? s.moveTo(x, y) : s.lineTo(x, y);
+  }
+  s.closePath();
+  return s;
+}
+
+const shape = hexShape(HEX_R - GAP * 0.5);
+
+const colMat = new THREE.MeshStandardMaterial({
+  color: 0x080e0a, roughness: 0.72, metalness: 0.55,
+});
+const topMatBase = new THREE.MeshStandardMaterial({
+  color: 0x050d07, roughness: 0.5, metalness: 0.8,
+  emissive: new THREE.Color(0x02a055), emissiveIntensity: 0.25,
+});
+const glowEdgeMat = new THREE.LineBasicMaterial({
+  color: 0x05ed99, transparent: true, opacity: 0.9,
+});
+const hotEdgeMat = new THREE.LineBasicMaterial({
+  color: 0x80ffcc, transparent: true, opacity: 1.0,
+});
+
+const offsetX = -(COLS * W_STEP) / 2 + W_STEP / 2;
+const offsetZ = -(ROWS * H_STEP) / 2;
+
+for (let c = 0; c < COLS; c++) {
+  for (let r = 0; r < ROWS; r++) {
+    const h   = 0.4 + rand() * 5.5;
+    const hot = rand() < 0.12; // extra bright columns
+
+    const x = offsetX + c * W_STEP;
+    const z = offsetZ + r * H_STEP + (c % 2 === 0 ? 0 : H_STEP / 2);
+
+    const extGeo = new THREE.ExtrudeGeometry(shape, { depth: h, bevelEnabled: false });
+    extGeo.rotateX(-Math.PI / 2);
+
+    const topMat = hot
+      ? new THREE.MeshStandardMaterial({
+          color: 0x040c06, roughness: 0.4, metalness: 0.9,
+          emissive: new THREE.Color(0x05ed99), emissiveIntensity: 0.8,
+        })
+      : topMatBase;
+
+    const col = new THREE.Mesh(extGeo, [colMat, topMat]);
+    col.position.set(x, 0, z);
+    scene.add(col);
+
+    const edges = new THREE.EdgesGeometry(extGeo, 15);
+    const lines = new THREE.LineSegments(edges, hot ? hotEdgeMat : glowEdgeMat);
+    lines.position.copy(col.position);
+    scene.add(lines);
+  }
+}
+
+// ─── Ground ─────────────────────────────────────────────────
+const groundMat = new THREE.MeshStandardMaterial({
+  color: 0x030a05, roughness: 0.95, metalness: 0.1,
+});
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(120, 120), groundMat);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -0.02;
+scene.add(ground);
+
+// ─── Particles ──────────────────────────────────────────────
+const pCount = 3000;
+const pPos   = new Float32Array(pCount * 3);
+for (let i = 0; i < pCount * 3; i++) pPos[i] = (rand() - 0.5) * 80;
+const pGeo = new THREE.BufferGeometry();
+pGeo.setAttribute('position', new THREE.Float32BufferAttribute(pPos, 3));
+const pMat = new THREE.PointsMaterial({
+  color: 0x05ed99, size: 0.04, transparent: true, opacity: 0.45,
+});
+scene.add(new THREE.Points(pGeo, pMat));
+
+// ─── Lights ─────────────────────────────────────────────────
+scene.add(new THREE.AmbientLight(0x0d2016, 6));
+const keyLight = new THREE.PointLight(0x05ed99, 4, 40, 1.5);
+keyLight.position.set(0, 12, 0);
+scene.add(keyLight);
+const fillLight = new THREE.PointLight(0x00c8ff, 1.5, 30);
+fillLight.position.set(-10, 6, 5);
+scene.add(fillLight);
+
+// ─── Camera Path ────────────────────────────────────────────
+// Cinematic drone flythrough
+const cameraPath = new THREE.CatmullRomCurve3([
+  new THREE.Vector3( 0,   24,  22 ),   // 0  — high overhead, wide shot
+  new THREE.Vector3(-6,   18,  14 ),   // 1  — banking left, descending
+  new THREE.Vector3( 3,   12,   7 ),   // 2  — swooping down
+  new THREE.Vector3(-2,    6,   1 ),   // 3  — ground level entry
+  new THREE.Vector3( 5,    4,  -5 ),   // 4  — weaving right
+  new THREE.Vector3(-4,    3.5,-10 ),  // 5  — weaving left, very low
+  new THREE.Vector3( 2,    3,  -16 ),  // 6  — deep in the city
+  new THREE.Vector3( 6,    5,  -21 ),  // 7  — banking out
+  new THREE.Vector3(-1,   10,  -26 ),  // 8  — rising
+  new THREE.Vector3( 0,   20,  -32 ),  // 9  — high pull-back
+], false, 'catmullrom', 0.5);
+
+// ─── Post-processing ────────────────────────────────────────
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+
+const bloom = new UnrealBloomPass(new THREE.Vector2(W, H), 1.6, 0.55, 0.58);
+composer.addPass(bloom);
+
+// Color grade + vignette pass
+const gradePass = new ShaderPass({
+  uniforms: { tDiffuse: { value: null } },
+  vertexShader: `
+    varying vec2 vUv;
+    void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }
+  `,
+  fragmentShader: `
+    uniform sampler2D tDiffuse;
+    varying vec2 vUv;
+    void main() {
+      vec4 c = texture2D(tDiffuse, vUv);
+      // Vignette
+      vec2 uv = vUv * 2.0 - 1.0;
+      float v = 1.0 - smoothstep(0.35, 1.5, length(uv * vec2(0.8, 1.0)));
+      v = pow(v, 0.6);
+      // Slight cool tint in shadows
+      c.rgb = mix(c.rgb * vec3(0.85, 0.95, 0.92), c.rgb, clamp(dot(c.rgb, vec3(0.3)),0.0,1.0));
+      c.rgb *= v;
+      gl_FragColor = c;
+    }
+  `
+});
+composer.addPass(gradePass);
+
+// ─── Frame Control API ──────────────────────────────────────
+window.setFrame = function(n, total) {
+  total = total || 150;
+  const t = n / (total - 1);
+
+  // Camera position
+  const pos    = cameraPath.getPoint(t);
+  const lookT  = Math.min(t + 0.018, 1.0);
+  const lookAt = cameraPath.getPoint(lookT);
+
+  camera.position.copy(pos);
+  camera.lookAt(lookAt);
+
+  // Slight camera roll for cinematic feel
+  const tangent = cameraPath.getTangent(t);
+  const up = new THREE.Vector3(0, 1, 0);
+  const right = new THREE.Vector3().crossVectors(tangent, up).normalize();
+  camera.up.copy(up.clone().addScaledVector(right, tangent.x * 0.18).normalize());
+
+  // Pulse key light along path
+  keyLight.position.set(pos.x, pos.y + 4, pos.z);
+  keyLight.intensity = 3.5 + 1.5 * Math.sin(t * Math.PI * 5);
+
+  // Animate edge opacity pulse
+  glowEdgeMat.opacity = 0.75 + 0.25 * Math.sin(t * Math.PI * 8);
+
+  composer.render();
+};
+
+// Signal ready
+window.isReady = true;
+window.setFrame(0);
+</script>
+</body>
+</html>

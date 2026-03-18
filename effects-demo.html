@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Revamply — Image Effects</title>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+    }
+  }
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --green: #05ed99; --bg: #06080a; }
+
+    body {
+      background: var(--bg);
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(6,8,10,0.75);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    nav a { color: rgba(255,255,255,0.45); text-decoration: none; font-size: 13px; transition: color .2s; }
+    nav a:hover { color: var(--green); }
+    nav span { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.8); }
+
+    /* PANELS */
+    .panel {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 100px 40px 60px;
+      position: relative;
+    }
+    .panel + .panel {
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+
+    /* subtle noise texture on panels */
+    .panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.4;
+    }
+
+    .panel__meta {
+      text-align: center;
+      margin-bottom: 52px;
+      position: relative;
+      z-index: 1;
+    }
+    .panel__tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--green);
+      opacity: 0.8;
+      margin-bottom: 14px;
+    }
+    .panel__title {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+    .panel__sub {
+      font-size: 15px;
+      color: rgba(255,255,255,0.38);
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* CANVAS WRAPPERS */
+    .canvas-wrap {
+      position: relative;
+      z-index: 1;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.07),
+        0 40px 80px rgba(0,0,0,0.7),
+        0 0 120px rgba(5,237,153,0.04);
+    }
+
+    #parallax-canvas {
+      display: block;
+      width: 800px;
+      height: 500px;
+      cursor: crosshair;
+    }
+
+    /* HOLO CARD */
+    .holo-scene {
+      position: relative;
+      z-index: 1;
+      perspective: 1000px;
+      cursor: none;
+    }
+    .holo-card-wrap {
+      width: 640px;
+      height: 420px;
+      border-radius: 20px;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.06),
+        0 40px 100px rgba(0,0,0,0.8);
+      overflow: hidden;
+      position: relative;
+      will-change: transform;
+    }
+    #holo-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Custom cursor for holo */
+    .holo-cursor {
+      position: fixed;
+      pointer-events: none;
+      width: 8px;
+      height: 8px;
+      background: var(--green);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 999;
+      opacity: 0;
+      transition: opacity .2s;
+      box-shadow: 0 0 12px var(--green);
+    }
+    .holo-scene:hover ~ .holo-cursor,
+    .holo-cursor.visible { opacity: 1; }
+
+    .hint {
+      margin-top: 24px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.22);
+      letter-spacing: 0.3px;
+      position: relative;
+      z-index: 1;
+    }
+    .hint b { color: rgba(5,237,153,0.6); font-weight: 500; }
+
+    @media (max-width: 900px) {
+      #parallax-canvas { width: min(90vw, 480px); height: auto; aspect-ratio: 8/5; }
+      .holo-card-wrap { width: min(90vw, 400px); height: auto; aspect-ratio: 16/10; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html">← Revamply</a>
+  <span>Image Effects</span>
+  <span style="color:rgba(255,255,255,0.2); font-size:12px;">Move cursor over each effect</span>
+</nav>
+
+<!-- ======================================================
+     PANEL 1 — 2.5D PARALLAX
+====================================================== -->
+<div class="panel" id="p1">
+  <div class="panel__meta">
+    <div class="panel__tag">Effect 01</div>
+    <h2 class="panel__title">2.5D Depth Parallax</h2>
+    <p class="panel__sub">Bright areas float toward you. The parallax is computed per-pixel in a shader — no geometry distortion.</p>
+  </div>
+  <div class="canvas-wrap">
+    <canvas id="parallax-canvas"></canvas>
+  </div>
+  <p class="hint">Move cursor over the image — <b>cyan edges push forward, dark recedes</b></p>
+</div>
+
+<!-- ======================================================
+     PANEL 2 — HOLOGRAPHIC CARD
+====================================================== -->
+<div class="panel" id="p2">
+  <div class="panel__meta">
+    <div class="panel__tag">Effect 03</div>
+    <h2 class="panel__title">Holographic Card</h2>
+    <p class="panel__sub">Thin-film iridescence shader + spring physics tilt + specular hotspot that follows your cursor in real time.</p>
+  </div>
+  <div class="holo-scene" id="holo-scene">
+    <div class="holo-card-wrap" id="holo-card-wrap">
+      <canvas id="holo-canvas"></canvas>
+    </div>
+  </div>
+  <p class="hint">Hover and move slowly — <b>rainbow foil shifts with your view angle</b></p>
+</div>
+
+<div class="holo-cursor" id="holo-cursor"></div>
+
+<!-- ======================================================
+     SCRIPTS
+====================================================== -->
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass }     from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { ShaderPass }     from 'three/addons/postprocessing/ShaderPass.js';
+
+const IMG = 'black-honeycomb-hexagon-with-blue-glowing-neon-lighting-background-sci-fi-and-science-technology-concept-3d-illustration-rendering-photo.jpg';
+
+// ================================================================
+//  EFFECT 1 — UV PARALLAX + BLOOM
+// ================================================================
+;(function() {
+  const canvas = document.getElementById('parallax-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.1;
+
+  const scene  = new THREE.Scene();
+  const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+  function resize() {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    renderer.setSize(w, h, false);
+    composer.setSize(w, h);
+  }
+
+  // Post-processing
+  const composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+
+  const bloomPass = new UnrealBloomPass(
+    new THREE.Vector2(800, 500),
+    0.9,   // strength
+    0.4,   // radius
+    0.72   // threshold — only brightest (cyan) pixels bloom
+  );
+  composer.addPass(bloomPass);
+
+  // Vignette + final correction pass
+  const vignetteShader = {
+    uniforms: {
+      tDiffuse: { value: null },
+      uDarkness: { value: 0.7 }
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }
+    `,
+    fragmentShader: `
+      uniform sampler2D tDiffuse;
+      uniform float uDarkness;
+      varying vec2 vUv;
+      void main() {
+        vec4 col = texture2D(tDiffuse, vUv);
+        vec2 uv = vUv * 2.0 - 1.0;
+        float v = 1.0 - smoothstep(0.5, 1.4, length(uv * vec2(0.9, 1.0)));
+        v = pow(v, uDarkness);
+        gl_FragColor = vec4(col.rgb * v, col.a);
+      }
+    `
+  };
+  const vigPass = new ShaderPass(vignetteShader);
+  composer.addPass(vigPass);
+
+  // Parallax shader
+  const parallaxMat = new THREE.ShaderMaterial({
+    uniforms: {
+      uMap:       { value: null },
+      uMouse:     { value: new THREE.Vector2(0, 0) },
+      uSmooth:    { value: new THREE.Vector2(0, 0) },
+      uStrength:  { value: 0.055 },
+      uAberr:     { value: 0.0 },
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() { vUv = uv; gl_Position = vec4(position, 1.0); }
+    `,
+    fragmentShader: `
+      uniform sampler2D uMap;
+      uniform vec2 uSmooth;
+      uniform float uStrength;
+      uniform float uAberr;
+      varying vec2 vUv;
+
+      void main() {
+        // Sample depth from luminance (bright cyan = close to viewer)
+        vec4 depthSample = texture2D(uMap, vUv);
+        float depth = dot(depthSample.rgb, vec3(0.2126, 0.7152, 0.0722));
+        depth = pow(depth, 0.7); // ease the depth curve
+
+        // Parallax offset: bright pixels shift more with mouse
+        vec2 offset = -uSmooth * depth * uStrength;
+        vec2 pUv = vUv + offset;
+
+        // Chromatic aberration proportional to mouse distance
+        float aberr = uAberr;
+        float r = texture2D(uMap, pUv + vec2( aberr, 0.0)).r;
+        float g = texture2D(uMap, pUv).g;
+        float b = texture2D(uMap, pUv - vec2( aberr, 0.0)).b;
+
+        vec3 col = vec3(r, g, b);
+
+        // Boost glow — make bright areas pop more
+        float lum = dot(col, vec3(0.2126, 0.7152, 0.0722));
+        col += col * pow(lum, 3.0) * 1.2;
+
+        gl_FragColor = vec4(col, 1.0);
+      }
+    `
+  });
+
+  const plane = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), parallaxMat);
+  scene.add(plane);
+
+  const loader = new THREE.TextureLoader();
+  loader.load(IMG, tex => {
+    tex.colorSpace = THREE.SRGBColorSpace;
+    parallaxMat.uniforms.uMap.value = tex;
+  });
+
+  // Mouse tracking
+  const rawMouse  = new THREE.Vector2();
+  const smoothMouse = new THREE.Vector2();
+
+  canvas.addEventListener('mousemove', e => {
+    const r = canvas.getBoundingClientRect();
+    rawMouse.x =  ((e.clientX - r.left) / r.width  - 0.5) * 2;
+    rawMouse.y = -((e.clientY - r.top)  / r.height - 0.5) * 2;
+  });
+  canvas.addEventListener('mouseleave', () => { rawMouse.set(0, 0); });
+
+  resize();
+  window.addEventListener('resize', resize);
+
+  function animate() {
+    requestAnimationFrame(animate);
+
+    // Smooth mouse lerp
+    smoothMouse.x += (rawMouse.x - smoothMouse.x) * 0.055;
+    smoothMouse.y += (rawMouse.y - smoothMouse.y) * 0.055;
+
+    parallaxMat.uniforms.uSmooth.value.copy(smoothMouse);
+    parallaxMat.uniforms.uAberr.value = smoothMouse.length() * 0.004;
+
+    composer.render();
+  }
+  animate();
+})();
+
+
+// ================================================================
+//  EFFECT 3 — HOLOGRAPHIC CARD (Three.js iridescent shader)
+// ================================================================
+;(function() {
+  const canvas  = document.getElementById('holo-canvas');
+  const wrap    = document.getElementById('holo-card-wrap');
+  const sceneEl = document.getElementById('holo-scene');
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(0x000000, 0);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
+
+  const scene  = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+  camera.position.z = 2.8;
+
+  function resize() {
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Holographic shader
+  const holoMat = new THREE.ShaderMaterial({
+    uniforms: {
+      uMap:   { value: null },
+      uMouse: { value: new THREE.Vector2(0, 0) },
+      uTime:  { value: 0 },
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      varying vec3 vNormal;
+      varying vec3 vViewDir;
+      void main() {
+        vUv     = uv;
+        vNormal = normalize(normalMatrix * normal);
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        vViewDir = normalize(-mv.xyz);
+        gl_Position = projectionMatrix * mv;
+      }
+    `,
+    fragmentShader: `
+      #define PI 3.14159265
+
+      uniform sampler2D uMap;
+      uniform vec2  uMouse;
+      uniform float uTime;
+
+      varying vec2  vUv;
+      varying vec3  vNormal;
+      varying vec3  vViewDir;
+
+      // Thin-film iridescence (physically-inspired)
+      vec3 iridescence(float cosTheta, float shift) {
+        float phi = 5.5 * cosTheta + shift;
+        return vec3(
+          0.5 + 0.5 * cos(phi),
+          0.5 + 0.5 * cos(phi + 2.094395),
+          0.5 + 0.5 * cos(phi + 4.18879)
+        );
+      }
+
+      float fresnel(float cosTheta, float F0) {
+        return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+      }
+
+      void main() {
+        vec4 base = texture2D(uMap, vUv);
+
+        // Luminance of the image — drives iridescence intensity
+        float lum = dot(base.rgb, vec3(0.2126, 0.7152, 0.0722));
+
+        // Viewing geometry
+        float ndotv = max(0.0, dot(vNormal, vViewDir));
+        float fr = fresnel(ndotv, 0.04);
+
+        // Iridescent layer — angle-dependent color shift
+        float iriShift = uMouse.x * 3.5 + uMouse.y * 2.5 + lum * 3.0 + uTime * 0.08;
+        vec3  iri = iridescence(ndotv, iriShift);
+
+        // Specular highlight — follows mouse position
+        vec3 lightDir = normalize(vec3(uMouse.x * 2.5, uMouse.y * 2.5, 2.0));
+        vec3 halfDir  = normalize(lightDir + vViewDir);
+        float spec    = pow(max(0.0, dot(vNormal, halfDir)), 64.0);
+
+        // Wide softer secondary specular
+        float spec2 = pow(max(0.0, dot(vNormal, halfDir)), 12.0) * 0.15;
+
+        // Foil pattern: animated diagonal stripes to simulate micro-texture
+        float stripe = sin(vUv.x * 80.0 - vUv.y * 40.0 + uTime * 0.3) * 0.5 + 0.5;
+        stripe = pow(stripe, 6.0) * 0.08;
+
+        // Rim light
+        float rim = pow(1.0 - ndotv, 3.5);
+        vec3  rimCol = vec3(0.02, 0.93, 0.6) * rim * 0.25;
+
+        // Compose
+        vec3 col = base.rgb;
+
+        // Iridescence only on mid-bright areas (not pure black, not overexposed)
+        float iriMask = smoothstep(0.15, 0.6, lum) * (1.0 - smoothstep(0.7, 1.0, lum));
+        col += iri * iriMask * (fr + 0.12) * 0.55;
+
+        // Animated micro-texture foil flicker
+        col += iri * stripe;
+
+        // Specular
+        col += vec3(1.0) * spec * 0.7;
+        col += vec3(0.8, 0.95, 1.0) * spec2;
+
+        // Rim
+        col += rimCol;
+
+        gl_FragColor = vec4(col, 1.0);
+      }
+    `,
+    side: THREE.FrontSide,
+  });
+
+  const geo  = new THREE.PlaneGeometry(3.2, 2.1, 1, 1);
+  const mesh = new THREE.Mesh(geo, holoMat);
+  scene.add(mesh);
+
+  const loader = new THREE.TextureLoader();
+  loader.load(IMG, tex => {
+    tex.colorSpace = THREE.SRGBColorSpace;
+    holoMat.uniforms.uMap.value = tex;
+  });
+
+  // Spring physics for tilt
+  let cx = 0, cy = 0;   // current tilt (radians)
+  let vx = 0, vy = 0;   // velocity
+  let tx = 0, ty = 0;   // target tilt
+  const rawM = { x: 0, y: 0 };
+  const isHover = { v: false };
+
+  sceneEl.addEventListener('mouseenter', () => { isHover.v = true; });
+  sceneEl.addEventListener('mouseleave', () => {
+    isHover.v = false;
+    tx = 0; ty = 0;
+    rawM.x = 0; rawM.y = 0;
+  });
+  sceneEl.addEventListener('mousemove', e => {
+    const r = sceneEl.getBoundingClientRect();
+    rawM.x =  ((e.clientX - r.left) / r.width  - 0.5) * 2;
+    rawM.y = -((e.clientY - r.top)  / r.height - 0.5) * 2;
+    tx =  rawM.y * 0.30;
+    ty =  rawM.x * 0.42;
+  });
+
+  // Custom cursor
+  const cursor = document.getElementById('holo-cursor');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top  = e.clientY + 'px';
+  });
+  sceneEl.addEventListener('mouseenter', () => cursor.classList.add('visible'));
+  sceneEl.addEventListener('mouseleave', () => cursor.classList.remove('visible'));
+
+  const clock = new THREE.Clock();
+
+  function animate() {
+    requestAnimationFrame(animate);
+    const t = clock.getElapsedTime();
+
+    // Spring physics
+    const STIFFNESS = 0.09, DAMPING = 0.78;
+    vx = (vx + (tx - cx) * STIFFNESS) * DAMPING;
+    vy = (vy + (ty - cy) * STIFFNESS) * DAMPING;
+    cx += vx;
+    cy += vy;
+
+    mesh.rotation.x = cx;
+    mesh.rotation.y = cy;
+
+    holoMat.uniforms.uMouse.value.set(rawM.x, rawM.y);
+    holoMat.uniforms.uTime.value = t;
+
+    // Subtle box-shadow via wrap element
+    if (isHover.v) {
+      const sx = -rawM.x * 28, sy = rawM.y * 28;
+      wrap.style.boxShadow = `
+        ${sx}px ${sy}px 60px rgba(0,0,0,0.75),
+        0 0 80px rgba(5,237,153,0.08),
+        0 0 0 1px rgba(255,255,255,0.1)
+      `;
+    } else {
+      wrap.style.boxShadow = '0 40px 100px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.06)';
+    }
+
+    renderer.render(scene, camera);
+  }
+  animate();
+})();
+</script>
+</body>
+</html>

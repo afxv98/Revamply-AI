@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Revamply | Modern Operating Systems for Established Businesses</title>
+  <meta name="description" content="Revamply helps established companies modernize the systems that power their operations. Redesigning workflows and implementing intelligent automation." />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+
+  <!-- ===== NAVIGATION ===== -->
+  <nav class="site-nav">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo">
+        <svg class="nav__logo-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="36" height="36" rx="8" fill="rgba(5,237,153,0.1)" stroke="rgba(5,237,153,0.3)" stroke-width="1"/>
+          <path d="M10 18 L14 10 L22 10 L26 18 L22 26 L14 26 Z" stroke="#05ed99" stroke-width="1.5" fill="none"/>
+          <path d="M14 18 L18 12 L22 18 L18 24 Z" fill="#05ed99" opacity="0.6"/>
+          <circle cx="18" cy="18" r="2.5" fill="#05ed99"/>
+        </svg>
+        <span class="nav__logo-text">revamply</span>
+      </a>
+
+      <div class="nav__links">
+        <div class="nav__item">
+          <a href="index.html" class="nav__link">Home</a>
+        </div>
+        <div class="nav__item">
+          <a href="revamp-method.html" class="nav__link">
+            REVAMP
+            <svg width="10" height="6" viewBox="0 0 10 6" fill="currentColor"><path d="M1 1l4 4 4-4"/></svg>
+          </a>
+          <div class="nav__dropdown">
+            <a href="revamp-method.html">The REVAMP Method</a>
+            <a href="playbook.html">The Playbook</a>
+          </div>
+        </div>
+        <div class="nav__item">
+          <a href="assessment.html" class="nav__link">Assessment</a>
+        </div>
+        <div class="nav__item">
+          <a href="exit-ready.html" class="nav__link">Exit Ready</a>
+        </div>
+        <div class="nav__item">
+          <a href="#" class="nav__link">Case Studies</a>
+        </div>
+        <div class="nav__item">
+          <a href="#" class="nav__link">About</a>
+        </div>
+      </div>
+
+      <div class="nav__cta">
+        <a href="#contact" class="btn btn-primary">Book a Call</a>
+      </div>
+
+      <button class="nav__hamburger" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile Nav -->
+  <div class="nav__mobile">
+    <a href="index.html">Home</a>
+    <a href="revamp-method.html">The REVAMP Method</a>
+    <a href="playbook.html">The Playbook</a>
+    <a href="assessment.html">Assessment</a>
+    <a href="exit-ready.html">Exit Ready</a>
+    <a href="#">Case Studies</a>
+    <a href="#">About</a>
+    <a href="#contact" class="btn btn-primary">Book a Call</a>
+  </div>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero">
+    <div class="hero__bg">
+      <div class="hero__grid"></div>
+    </div>
+    <canvas id="hero-canvas"></canvas>
+    <div class="hero__content">
+      <div class="hero__badge" data-animate>
+        <span class="hero__badge-dot"></span>
+        Operational Modernization for Established Businesses
+      </div>
+      <h1 class="hero__title" data-animate data-animate-delay="1">
+        Modern Operating Systems<br />for <span>Established Businesses</span>
+      </h1>
+      <p class="hero__subtitle" data-animate data-animate-delay="2">
+        Revamply helps established companies modernize the systems that power their operations. By redesigning workflows and implementing intelligent automation, we help businesses operate more efficiently, scale more easily, and prepare for the future.
+      </p>
+      <div class="hero__buttons" data-animate data-animate-delay="3">
+        <a href="#contact" class="btn btn-primary btn-lg">Book a Discovery Call</a>
+        <a href="assessment.html" class="btn btn-secondary btn-lg">Request an Operational Assessment</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== THE PROBLEM ===== -->
+  <section class="problem">
+    <div class="problem__container">
+      <div data-animate>
+        <h2 class="problem__heading">
+          Many Successful Businesses Are Running on<br />Outdated Operating Systems
+        </h2>
+      </div>
+      <p class="problem__body" data-animate data-animate-delay="1">
+        Thousands of profitable businesses were built before modern digital infrastructure existed.<br />
+        Over time, these companies develop operational challenges such as:
+      </p>
+      <ul class="problem__list" data-animate data-animate-delay="2">
+        <li>manual workflows</li>
+        <li>disconnected software systems</li>
+        <li>slow response times to customers</li>
+        <li>administrative bottlenecks</li>
+        <li>processes that rely heavily on the owner</li>
+      </ul>
+      <p class="problem__body" data-animate data-animate-delay="3">
+        These inefficiencies often limit growth and reduce business value.<br />
+        Modern businesses require something different.
+      </p>
+      <p class="problem__accent" data-animate data-animate-delay="4">
+        They require a modern operating system.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== WHAT REVAMPLY DOES ===== -->
+  <section class="features section">
+    <div class="features__header container" data-animate>
+      <div class="section__label">What We Do</div>
+      <h2 class="section__title">We Redesign the Systems<br /><span>That Run Businesses</span></h2>
+      <p class="section__subtitle">
+        Revamply analyzes how your company currently operates and redesigns the systems that power your business. Rather than simply recommending software tools, we design complete operational systems that integrate modern automation, intelligent workflows, and connected infrastructure.
+      </p>
+    </div>
+
+    <div class="features__grid">
+      <div class="feature-card" data-animate>
+        <div class="feature-card__glow"></div>
+        <div class="feature-card__icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <h3 class="feature-card__title">Automated Customer Communication</h3>
+        <p class="feature-card__text">Intelligent systems that respond, follow up, and nurture customer relationships automatically — ensuring no lead or enquiry falls through the cracks.</p>
+      </div>
+
+      <div class="feature-card" data-animate data-animate-delay="1">
+        <div class="feature-card__glow"></div>
+        <div class="feature-card__icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        </div>
+        <h3 class="feature-card__title">Streamlined Internal Workflows</h3>
+        <p class="feature-card__text">Replace fragmented, manual processes with structured, efficient workflows that allow your team to focus on work that actually moves the business forward.</p>
+      </div>
+
+      <div class="feature-card" data-animate data-animate-delay="2">
+        <div class="feature-card__glow"></div>
+        <div class="feature-card__icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <h3 class="feature-card__title">Operational Dashboards & Reporting</h3>
+        <p class="feature-card__text">Real-time visibility into how your business is performing. Know exactly where things stand without chasing updates or compiling spreadsheets manually.</p>
+      </div>
+
+      <div class="feature-card" data-animate data-animate-delay="3">
+        <div class="feature-card__glow"></div>
+        <div class="feature-card__icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        </div>
+        <h3 class="feature-card__title">Integrated Business Software</h3>
+        <p class="feature-card__text">Connect your existing tools and infrastructure into a cohesive, coordinated system — eliminating silos and creating seamless information flow across departments.</p>
+      </div>
+
+      <div class="feature-card" data-animate data-animate-delay="1">
+        <div class="feature-card__glow"></div>
+        <div class="feature-card__icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </div>
+        <h3 class="feature-card__title">Intelligent Customer Response</h3>
+        <p class="feature-card__text">AI-powered systems that handle routine customer interactions, route enquiries intelligently, and surface information that helps your team close deals faster.</p>
+      </div>
+
+      <div class="feature-card" data-animate data-animate-delay="2">
+        <div class="feature-card__glow"></div>
+        <div class="feature-card__icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <h3 class="feature-card__title">Automation Across Departments</h3>
+        <p class="feature-card__text">Identify repetitive tasks across every area of your business and replace them with intelligent automation that works consistently, day and night.</p>
+      </div>
+    </div>
+
+    <div class="container" style="margin-top:48px; text-align:center;" data-animate>
+      <p style="font-size:18px; font-weight:600; color:var(--gray); margin-bottom:12px;">The objective is simple:</p>
+      <p style="font-size:22px; font-weight:700; color:var(--green);">Create a business that runs more efficiently and scales more easily.</p>
+    </div>
+  </section>
+
+  <!-- ===== FOUNDER ===== -->
+  <section class="founder section">
+    <div class="container">
+      <div class="founder__layout">
+        <div>
+          <div class="founder__badge" data-animate>Built by a Technology Founder</div>
+          <h2 class="founder__title" data-animate data-animate-delay="1">
+            Built by an Entrepreneur Who Builds Real Systems
+          </h2>
+          <p class="founder__body" data-animate data-animate-delay="2">
+            Revamply was founded by Duncan MacDonald, a multiple-technology company founder who has spent his career building software platforms designed to solve operational inefficiencies inside real businesses.
+          </p>
+          <p class="founder__body" data-animate data-animate-delay="2">
+            Unlike traditional consultants who focus primarily on strategy, Duncan's background is rooted in building and deploying operational technology systems from the ground up.
+          </p>
+          <blockquote class="founder__quote" data-animate data-animate-delay="3">
+            Identify inefficiencies inside real businesses and build systems that eliminate them.
+          </blockquote>
+          <p class="founder__body" data-animate data-animate-delay="3">
+            All of these platforms were bootstrapped and developed from scratch, with technology designed specifically to improve how companies operate. Revamply brings that same systems-thinking approach to established businesses seeking to modernize their operations.
+          </p>
+        </div>
+        <div class="founder__visual" data-animate data-animate-delay="2">
+          <div class="founder__visual-glow"></div>
+          <div class="founder__visual-inner">
+            <div class="founder__avatar">DM</div>
+            <div class="founder__name">Duncan MacDonald</div>
+            <div class="founder__role">Founder, Revamply</div>
+            <div style="margin-top:32px; display:flex; flex-direction:column; gap:12px; text-align:left;">
+              <div style="background:rgba(5,237,153,0.06); border:1px solid rgba(5,237,153,0.2); border-radius:10px; padding:14px 18px;">
+                <div style="font-size:12px; color:var(--green); font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:4px;">Automotive</div>
+                <div style="font-size:14px; color:rgba(255,255,255,0.7);">DealerBids · LotPilot · CarConnective</div>
+              </div>
+              <div style="background:rgba(5,237,153,0.06); border:1px solid rgba(5,237,153,0.2); border-radius:10px; padding:14px 18px;">
+                <div style="font-size:12px; color:var(--green); font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:4px;">Hospitality</div>
+                <div style="font-size:14px; color:rgba(255,255,255,0.7);">RoomService AI · HospitalityOS</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TECHNOLOGY PLATFORMS ===== -->
+  <section class="platforms section">
+    <div class="container">
+      <div class="section__label text-center" data-animate>Technology Platforms</div>
+      <h2 class="section__title text-center" data-animate data-animate-delay="1">Built by the Founder</h2>
+
+      <div class="platforms__grid">
+        <div class="platform-card" data-animate>
+          <div class="platform-card__label">Automotive</div>
+          <div class="platform-card__name">DealerBids</div>
+          <p class="platform-card__desc">A digital wholesale vehicle marketplace designed for automotive dealers. The platform connects dealerships and enables them to buy and sell inventory through a streamlined bidding environment, improving efficiency and transparency in the wholesale vehicle market.</p>
+        </div>
+
+        <div class="platform-card" data-animate data-animate-delay="1">
+          <div class="platform-card__label">Automotive</div>
+          <div class="platform-card__name">LotPilot</div>
+          <p class="platform-card__desc">An AI-powered operating platform for car dealerships. The system automates key operational areas including vehicle inventory marketing, lead management, customer communication, and appointment scheduling, helping dealerships increase sales efficiency while reducing manual workload.</p>
+        </div>
+
+        <div class="platform-card" data-animate data-animate-delay="2">
+          <div class="platform-card__label">Automotive</div>
+          <div class="platform-card__name">CarConnective</div>
+          <p class="platform-card__desc">A connected vehicle intelligence platform designed to help dealerships better understand and interact with vehicles after the sale. The system provides insights into vehicle health, service needs, and ownership lifecycle events.</p>
+          <span class="platform-card__badge">Launching Soon</span>
+        </div>
+
+        <div class="platform-card" data-animate>
+          <div class="platform-card__label">Hospitality</div>
+          <div class="platform-card__name">RoomService AI</div>
+          <p class="platform-card__desc">A platform designed to modernize guest communication and service delivery within the hospitality industry. The system helps hotels automate guest requests, streamline service operations, and improve response times through intelligent messaging systems.</p>
+        </div>
+
+        <div class="platform-card" data-animate data-animate-delay="1">
+          <div class="platform-card__label">Hospitality</div>
+          <div class="platform-card__name">HospitalityOS</div>
+          <p class="platform-card__desc">A modern operating system currently being developed for hotels. The platform is designed to unify hospitality operations into a single intelligent infrastructure that improves communication, operational coordination, and guest service management.</p>
+          <span class="platform-card__badge">In Development</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== REAL WORLD EXPERIENCE ===== -->
+  <section class="trust section">
+    <div class="container">
+      <div class="section__label text-center" data-animate>Real-World Experience</div>
+      <h2 class="trust__title" data-animate data-animate-delay="1">
+        Operational Systems Designed<br />for Real Businesses
+      </h2>
+      <p class="trust__sub" data-animate data-animate-delay="2">
+        Revamply's technology and systems have been developed in collaboration with real-world companies, providing deep insight into where inefficiencies develop and where modernization delivers meaningful improvements.
+      </p>
+      <div class="trust__items" data-animate data-animate-delay="3">
+        <div class="trust__item">
+          <div class="trust__item-title">Automotive</div>
+          <div class="trust__item-sub">Large dealer groups & independents</div>
+        </div>
+        <div class="trust__item">
+          <div class="trust__item-title">Hospitality</div>
+          <div class="trust__item-sub">Luxury five-star hotels</div>
+        </div>
+        <div class="trust__item">
+          <div class="trust__item-title">Multi-Industry</div>
+          <div class="trust__item-sub">Service-based businesses</div>
+        </div>
+        <div class="trust__item">
+          <div class="trust__item-title">Real Systems</div>
+          <div class="trust__item-sub">Built & deployed from scratch</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== THE REVAMP FRAMEWORK ===== -->
+  <section class="framework section">
+    <div class="container">
+      <div class="section__label text-center" data-animate>The Framework</div>
+      <h2 class="section__title text-center" data-animate data-animate-delay="1">
+        The Revamp Operational<br /><span>Modernization Framework</span>
+      </h2>
+      <p class="section__subtitle text-center" data-animate data-animate-delay="2">
+        Revamply uses a structured framework to redesign how businesses operate.
+      </p>
+
+      <div class="steps">
+        <div class="step-card" data-animate>
+          <div class="step-card__letter">R</div>
+          <div class="step-card__num">01 — Review</div>
+          <h3 class="step-card__title">Review Operations</h3>
+          <p class="step-card__text">Analyze how your business currently functions across customer communication, workflows, and internal systems.</p>
+        </div>
+
+        <div class="step-card" data-animate data-animate-delay="1">
+          <div class="step-card__letter">E</div>
+          <div class="step-card__num">02 — Expose</div>
+          <h3 class="step-card__title">Expose Inefficiencies</h3>
+          <p class="step-card__text">Identify operational bottlenecks, repetitive tasks, and manual processes that limit growth and performance.</p>
+        </div>
+
+        <div class="step-card" data-animate data-animate-delay="2">
+          <div class="step-card__letter">V</div>
+          <div class="step-card__num">03 — Visualize</div>
+          <h3 class="step-card__title">Visualize the Future System</h3>
+          <p class="step-card__text">Design the architecture for a modern operating system tailored specifically to your business.</p>
+        </div>
+
+        <div class="step-card" data-animate>
+          <div class="step-card__letter">A</div>
+          <div class="step-card__num">04 — Automate</div>
+          <h3 class="step-card__title">Automate Workflows</h3>
+          <p class="step-card__text">Implement automation and intelligent systems that streamline operations across your entire business.</p>
+        </div>
+
+        <div class="step-card" data-animate data-animate-delay="1">
+          <div class="step-card__letter">M</div>
+          <div class="step-card__num">05 — Monitor</div>
+          <h3 class="step-card__title">Monitor Performance</h3>
+          <p class="step-card__text">Measure improvements across efficiency, responsiveness, and operational performance with real-time visibility.</p>
+        </div>
+
+        <div class="step-card" data-animate data-animate-delay="2">
+          <div class="step-card__letter">P</div>
+          <div class="step-card__num">06 — Progress</div>
+          <h3 class="step-card__title">Progressively Improve</h3>
+          <p class="step-card__text">Continuously refine and enhance the operating system as the business evolves and grows.</p>
+        </div>
+      </div>
+
+      <div style="text-align:center; margin-top:40px;" data-animate>
+        <a href="revamp-method.html" class="btn btn-outline-green btn-lg">Explore the Full Framework →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SERVICES ===== -->
+  <section class="services section">
+    <div class="container">
+      <div class="section__label text-center" data-animate>Services</div>
+      <h2 class="section__title text-center" data-animate data-animate-delay="1">How We Work<br /><span>With Businesses</span></h2>
+
+      <div class="services__grid">
+        <div class="service-card" data-animate>
+          <div class="service-card__num">01</div>
+          <h3 class="service-card__title">Operational Assessment</h3>
+          <p class="service-card__text">A structured analysis of your current operational systems and workflows. Deliverables include:</p>
+          <ul class="service-card__list">
+            <li>Operational workflow review</li>
+            <li>Modernization opportunities</li>
+            <li>Recommended system architecture</li>
+            <li>Implementation roadmap</li>
+          </ul>
+        </div>
+
+        <div class="service-card" data-animate data-animate-delay="1">
+          <div class="service-card__num">02</div>
+          <h3 class="service-card__title">Operating System Implementation</h3>
+          <p class="service-card__text">Revamply designs and deploys modern operational systems tailored to the unique workflows of your business. This may include automation infrastructure, integrated tools, and intelligent operational workflows.</p>
+        </div>
+
+        <div class="service-card" data-animate data-animate-delay="2">
+          <div class="service-card__num">03</div>
+          <h3 class="service-card__title">Ongoing Operational Optimization</h3>
+          <p class="service-card__text">Once implemented, Revamply helps monitor and refine operational systems to ensure your business continues running at peak efficiency as it grows and evolves.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== IDEAL CLIENTS ===== -->
+  <section class="clients-section section">
+    <div class="container">
+      <div class="section__label text-center" data-animate>Ideal Clients</div>
+      <h2 class="section__title text-center" data-animate data-animate-delay="1">The Businesses<br /><span>We Work With</span></h2>
+      <p class="section__subtitle text-center" data-animate data-animate-delay="2">
+        Revamply works with established companies that have built strong businesses but recognise that operational systems need modernisation.
+      </p>
+
+      <div class="clients__layout" style="margin-top:56px;">
+        <div data-animate>
+          <h3 class="clients__col-title">Typical Client Profile</h3>
+          <ul class="clients__list">
+            <li>£1M – £10M annual revenue</li>
+            <li>10 – 50 employees</li>
+            <li>Profitable and established</li>
+            <li>Operational processes built years ago</li>
+            <li>Owners considering long-term growth or future exit</li>
+          </ul>
+        </div>
+        <div data-animate data-animate-delay="1">
+          <h3 class="clients__col-title">Industries We Serve</h3>
+          <ul class="clients__list">
+            <li>Professional services</li>
+            <li>Property management</li>
+            <li>Construction and trades</li>
+            <li>Hospitality</li>
+            <li>Automotive services</li>
+            <li>Service-based businesses</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== OUTCOMES ===== -->
+  <section class="outcomes section section--white">
+    <div class="container">
+      <div class="section__label section__label--dark" data-animate>Outcomes</div>
+      <h2 class="outcomes__title" data-animate data-animate-delay="1">
+        What Happens When a Business Modernises Its Operating System
+      </h2>
+      <p class="outcomes__subtitle" data-animate data-animate-delay="2">
+        When operational systems are modernised, businesses often experience meaningful improvements.
+      </p>
+
+      <div class="outcomes__grid" data-animate data-animate-delay="3">
+        <div class="outcome-item">
+          <div class="outcome-item__check">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="#00a86b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <span class="outcome-item__text">Faster customer response times</span>
+        </div>
+        <div class="outcome-item">
+          <div class="outcome-item__check">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="#00a86b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <span class="outcome-item__text">Reduced administrative workload</span>
+        </div>
+        <div class="outcome-item">
+          <div class="outcome-item__check">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="#00a86b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <span class="outcome-item__text">Improved operational clarity</span>
+        </div>
+        <div class="outcome-item">
+          <div class="outcome-item__check">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="#00a86b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <span class="outcome-item__text">Stronger management visibility</span>
+        </div>
+        <div class="outcome-item">
+          <div class="outcome-item__check">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="#00a86b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <span class="outcome-item__text">Improved profitability</span>
+        </div>
+        <div class="outcome-item">
+          <div class="outcome-item__check">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="#00a86b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <span class="outcome-item__text">Businesses that are easier to scale or sell</span>
+        </div>
+      </div>
+
+      <div style="margin-top:40px; text-align:center;" data-animate>
+        <p style="font-size:17px; color:rgba(0,0,0,0.6); font-style:italic;">
+          Operational modernisation is not simply about technology.<br />
+          It is about building a business that runs smoothly and efficiently.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CTA BANNER ===== -->
+  <section class="cta-banner" id="contact">
+    <div class="cta-banner__container">
+      <h2 class="cta-banner__title" data-animate>
+        Start Modernising<br /><span style="color:var(--green)">Your Business</span>
+      </h2>
+      <p class="cta-banner__sub" data-animate data-animate-delay="1">
+        Every successful company eventually reaches a point where its operational systems must evolve. Revamply helps established businesses redesign the systems that power their operations.
+      </p>
+      <div data-animate data-animate-delay="2">
+        <a href="#" class="btn btn-primary btn-lg">Book a Discovery Call</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="site-footer">
+    <div class="footer__inner">
+      <div class="footer__brand">
+        <a href="index.html" class="footer__logo">
+          <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
+            <rect width="36" height="36" rx="8" fill="rgba(5,237,153,0.1)" stroke="rgba(5,237,153,0.3)" stroke-width="1"/>
+            <path d="M10 18 L14 10 L22 10 L26 18 L22 26 L14 26 Z" stroke="#05ed99" stroke-width="1.5" fill="none"/>
+            <circle cx="18" cy="18" r="2.5" fill="#05ed99"/>
+          </svg>
+          <span>revamply</span>
+        </a>
+        <p class="footer__tagline">
+          Modern Operating Systems for Established Businesses.<br />
+          Helping companies redesign the systems that power their operations.
+        </p>
+      </div>
+
+      <div class="footer__nav">
+        <div class="footer__nav-group">
+          <h4>Pages</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="assessment.html">Operational Assessment</a></li>
+            <li><a href="exit-ready.html">Modernising Before Exit</a></li>
+            <li><a href="#">Case Studies</a></li>
+          </ul>
+        </div>
+        <div class="footer__nav-group">
+          <h4>Framework</h4>
+          <ul>
+            <li><a href="revamp-method.html">The REVAMP Method</a></li>
+            <li><a href="playbook.html">The Playbook</a></li>
+            <li><a href="#">About</a></li>
+          </ul>
+        </div>
+        <div class="footer__nav-group">
+          <h4>Get Started</h4>
+          <ul>
+            <li><a href="#">Book a Call</a></li>
+            <li><a href="assessment.html">Request Assessment</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <span>© 2025 Revamply. All rights reserved.</span>
+      <span>Modern Operating Systems for Established Businesses</span>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script type="module" src="js/hero3d.js"></script>
+</body>
+</html>

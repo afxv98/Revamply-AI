@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Revamply — Enter the System</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #05ed99;
+      --bg:    #000804;
+    }
+
+    html { scroll-behavior: auto; }
+
+    body {
+      background: var(--bg);
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── Nav ─────────────────────────────────────── */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 200;
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      mix-blend-mode: difference;
+    }
+    .nav__logo {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #fff;
+      text-decoration: none;
+    }
+    .nav__cta {
+      font-size: 13px;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 8px 18px;
+      border-radius: 100px;
+      transition: all .2s;
+    }
+    .nav__cta:hover { color: #fff; border-color: #fff; }
+
+    /* ── Loading screen ──────────────────────────── */
+    #loader {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      transition: opacity .6s ease;
+    }
+    #loader.hidden { opacity: 0; pointer-events: none; }
+
+    .loader__label {
+      font-size: 12px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+    }
+    .loader__bar-wrap {
+      width: 220px;
+      height: 2px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .loader__bar {
+      height: 100%;
+      width: 0%;
+      background: var(--green);
+      box-shadow: 0 0 12px var(--green);
+      border-radius: 2px;
+      transition: width .1s linear;
+    }
+    .loader__pct {
+      font-size: 11px;
+      color: rgba(5,237,153,0.6);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Scroll stage ────────────────────────────── */
+    #scroll-stage {
+      position: relative;
+      /* 300 frames × 20px each = 6000px of scroll room */
+      height: calc(100vh + 6000px);
+    }
+
+    /* ── Sticky canvas container ─────────────────── */
+    #sticky {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    #film-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ── Overlay text scenes ──────────────────────── */
+    .scene {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .05s;
+    }
+
+    .scene__eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 20px;
+      opacity: 0.85;
+    }
+    .scene__title {
+      font-size: clamp(36px, 6vw, 80px);
+      font-weight: 800;
+      letter-spacing: -2.5px;
+      line-height: 1.04;
+      color: #fff;
+      text-align: center;
+      text-shadow: 0 0 80px rgba(5,237,153,0.25);
+      max-width: 900px;
+    }
+    .scene__title span { color: var(--green); }
+    .scene__sub {
+      margin-top: 20px;
+      font-size: 16px;
+      color: rgba(255,255,255,0.45);
+      max-width: 520px;
+      text-align: center;
+      line-height: 1.6;
+    }
+    .scene__cta {
+      margin-top: 36px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--green);
+      color: #000;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 14px 28px;
+      border-radius: 100px;
+      text-decoration: none;
+      pointer-events: all;
+      box-shadow: 0 0 40px rgba(5,237,153,0.35);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .scene__cta:hover {
+      transform: scale(1.04);
+      box-shadow: 0 0 60px rgba(5,237,153,0.55);
+    }
+
+    /* Dark gradient at bottom of canvas for text readability */
+    .scene::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.5) 100%);
+      z-index: -1;
+    }
+
+    /* Scroll hint */
+    .scroll-hint {
+      position: absolute;
+      bottom: 36px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      transition: opacity .3s;
+      pointer-events: none;
+    }
+    .scroll-hint.visible { opacity: 1; }
+    .scroll-hint__text {
+      font-size: 10px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+    }
+    .scroll-hint__arrow {
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, rgba(5,237,153,0.6), transparent);
+      animation: scrollArrow 1.5s ease-in-out infinite;
+    }
+    @keyframes scrollArrow {
+      0%   { transform: scaleY(1) translateY(0); opacity: 1; }
+      100% { transform: scaleY(1) translateY(12px); opacity: 0; }
+    }
+
+    /* ── Section after scroll animation ─────────── */
+    .after-section {
+      background: var(--bg);
+      padding: 120px 40px;
+      text-align: center;
+    }
+    .after-section h2 {
+      font-size: clamp(32px, 5vw, 60px);
+      font-weight: 800;
+      letter-spacing: -2px;
+      margin-bottom: 20px;
+    }
+    .after-section h2 span { color: var(--green); }
+    .after-section p {
+      font-size: 17px;
+      color: rgba(255,255,255,0.45);
+      max-width: 520px;
+      margin: 0 auto 40px;
+      line-height: 1.6;
+    }
+    .after-section a {
+      display: inline-block;
+      background: var(--green);
+      color: #000;
+      font-weight: 700;
+      padding: 14px 32px;
+      border-radius: 100px;
+      text-decoration: none;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loader">
+  <div class="loader__label">Initialising</div>
+  <div class="loader__bar-wrap"><div class="loader__bar" id="loader-bar"></div></div>
+  <div class="loader__pct" id="loader-pct">0%</div>
+</div>
+
+<!-- Nav -->
+<nav class="nav">
+  <a href="index.html" class="nav__logo">revamply</a>
+  <a href="index.html#contact" class="nav__cta">Book a Call</a>
+</nav>
+
+<!-- Scroll Stage -->
+<div id="scroll-stage">
+  <div id="sticky">
+    <canvas id="film-canvas"></canvas>
+
+    <!-- Scene 1: Intro (frames 0–25) -->
+    <div class="scene" id="scene-1">
+      <div class="scene__eyebrow">Revamply</div>
+      <h1 class="scene__title">Enter the<br /><span>System</span></h1>
+    </div>
+
+    <!-- Scene 2: Problem (frames 35–70) -->
+    <div class="scene" id="scene-2">
+      <div class="scene__eyebrow">The Problem</div>
+      <h2 class="scene__title">Your Business Is Running on<br /><span>Outdated Infrastructure</span></h2>
+      <p class="scene__sub">Manual workflows. Disconnected tools. Processes that only the owner understands.</p>
+    </div>
+
+    <!-- Scene 3: Solution (frames 85–115) -->
+    <div class="scene" id="scene-3">
+      <div class="scene__eyebrow">The Solution</div>
+      <h2 class="scene__title">We Rebuild the<br /><span>Operating System</span></h2>
+      <p class="scene__sub">Intelligent automation. Connected systems. A business that runs without you.</p>
+    </div>
+
+    <!-- Scene 4: CTA (frames 130–149) -->
+    <div class="scene" id="scene-4">
+      <div class="scene__eyebrow">Ready?</div>
+      <h2 class="scene__title">Modernize Your<br /><span>Operations</span></h2>
+      <a href="index.html#contact" class="scene__cta">Book a Discovery Call →</a>
+    </div>
+
+    <!-- Scroll hint -->
+    <div class="scroll-hint" id="scroll-hint">
+      <div class="scroll-hint__text">Scroll</div>
+      <div class="scroll-hint__arrow"></div>
+    </div>
+  </div>
+</div>
+
+<!-- After section -->
+<div class="after-section">
+  <h2>Modern Operating Systems<br /><span>for Established Businesses</span></h2>
+  <p>Revamply helps profitable, established companies modernize the workflows and systems that power their operations.</p>
+  <a href="index.html">Explore Revamply →</a>
+</div>
+
+<script>
+const TOTAL_FRAMES = 300;
+const frames = [];
+let loaded = 0;
+let currentFrame = 0;
+let displayFrame = 0;
+let rafId = null;
+
+const canvas  = document.getElementById('film-canvas');
+const ctx     = canvas.getContext('2d');
+const loaderEl  = document.getElementById('loader');
+const loaderBar = document.getElementById('loader-bar');
+const loaderPct = document.getElementById('loader-pct');
+const scrollHint = document.getElementById('scroll-hint');
+
+// ── Resize canvas ──────────────────────────────────────
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  if (frames[Math.round(displayFrame)]) drawFrame(Math.round(displayFrame));
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ── Draw a frame ───────────────────────────────────────
+function drawFrame(idx) {
+  idx = Math.max(0, Math.min(TOTAL_FRAMES - 1, Math.round(idx)));
+  if (!frames[idx]) return;
+  const img = frames[idx];
+  const cw = canvas.width, ch = canvas.height;
+  const iw = img.width,    ih = img.height;
+  const scale = Math.max(cw / iw, ch / ih);
+  const dx = (cw - iw * scale) / 2;
+  const dy = (ch - ih * scale) / 2;
+  ctx.drawImage(img, dx, dy, iw * scale, ih * scale);
+}
+
+// ── Load all frames ────────────────────────────────────
+function pad(n) { return String(n).padStart(3, '0'); }
+
+function loadFrames() {
+  return new Promise(resolve => {
+    for (let i = 0; i < TOTAL_FRAMES; i++) {
+      const img = new Image();
+      img.src = `frames/frame_${pad(i)}.jpg`;
+      img.onload = () => {
+        loaded++;
+        const pct = Math.round((loaded / TOTAL_FRAMES) * 100);
+        loaderBar.style.width = pct + '%';
+        loaderPct.textContent = pct + '%';
+        if (loaded === TOTAL_FRAMES) resolve();
+      };
+      frames[i] = img;
+    }
+  });
+}
+
+// ── Scene visibility based on frame ───────────────────
+const scenes = [
+  { id: 'scene-1', start: 0,   end: 55  },
+  { id: 'scene-2', start: 75,  end: 145 },
+  { id: 'scene-3', start: 170, end: 235 },
+  { id: 'scene-4', start: 260, end: 299 },
+];
+
+function updateScenes(f) {
+  scenes.forEach(s => {
+    const el = document.getElementById(s.id);
+    const inRange = f >= s.start && f <= s.end;
+    // Fade in/out at edges
+    const fadeLen = 8;
+    let alpha = 1;
+    if (f < s.start + fadeLen) alpha = (f - s.start) / fadeLen;
+    if (f > s.end   - fadeLen) alpha = (s.end - f)   / fadeLen;
+    alpha = Math.max(0, Math.min(1, alpha));
+    el.style.opacity  = inRange ? alpha : 0;
+    el.style.pointerEvents = inRange && alpha > 0.5 ? 'auto' : 'none';
+  });
+}
+
+// ── Scroll handler ─────────────────────────────────────
+function onScroll() {
+  const stage  = document.getElementById('scroll-stage');
+  const rect   = stage.getBoundingClientRect();
+  const total  = stage.offsetHeight - window.innerHeight;
+  const scrolled = -rect.top;
+  const progress = Math.max(0, Math.min(1, scrolled / total));
+  currentFrame = progress * (TOTAL_FRAMES - 1);
+
+  // Hide scroll hint once scrolled
+  if (scrolled > 60) scrollHint.classList.remove('visible');
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+
+// ── Animation loop ─────────────────────────────────────
+function tick() {
+  rafId = requestAnimationFrame(tick);
+  // Smooth lerp toward target frame
+  displayFrame += (currentFrame - displayFrame) * 0.12;
+  const idx = Math.round(displayFrame);
+  drawFrame(idx);
+  updateScenes(displayFrame);
+}
+
+// ── Init ───────────────────────────────────────────────
+loadFrames().then(() => {
+  loaderEl.classList.add('hidden');
+  setTimeout(() => {
+    loaderEl.style.display = 'none';
+    scrollHint.classList.add('visible');
+  }, 700);
+  drawFrame(0);
+  tick();
+});
+</script>
+</body>
+</html>
