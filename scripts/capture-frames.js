@@ -1,17 +1,17 @@
 // ============================================================
-// Capture 150 cinematic frames using Puppeteer + local server
+// Capture cinematic frames using Playwright + local server
 // ============================================================
-const puppeteer = require('puppeteer');
+const { chromium } = require('/opt/node22/lib/node_modules/playwright');
 const http  = require('http');
 const fs    = require('fs');
 const path  = require('path');
 
-const FRAMES     = 300;
+const FRAMES     = 600;
 const WIDTH      = 1440;
 const HEIGHT     = 810;
 const QUALITY    = 88;
 const PORT       = 7331;
-const OUTPUT_DIR = path.resolve(__dirname, '../frames');
+const OUTPUT_DIR = path.resolve(__dirname, '../public/frames');
 const SERVE_DIR  = path.resolve(__dirname);
 
 if (!fs.existsSync(OUTPUT_DIR)) fs.mkdirSync(OUTPUT_DIR, { recursive: true });
@@ -28,11 +28,15 @@ const MIME = {
 function startServer() {
   return new Promise(resolve => {
     const server = http.createServer((req, res) => {
-      const file = path.join(SERVE_DIR, req.url === '/' ? '/animation-scene.html' : req.url);
+      const urlPath = req.url === '/' ? '/animation-scene.html' : req.url;
+      const file = path.join(SERVE_DIR, urlPath);
       const ext  = path.extname(file);
       fs.readFile(file, (err, data) => {
         if (err) { res.writeHead(404); res.end('Not found'); return; }
-        res.writeHead(200, { 'Content-Type': MIME[ext] || 'text/plain' });
+        res.writeHead(200, {
+          'Content-Type': MIME[ext] || 'text/plain',
+          'Access-Control-Allow-Origin': '*',
+        });
         res.end(data);
       });
     });
@@ -51,30 +55,28 @@ function bar(n, total, width = 40) {
   const server = await startServer();
   console.log(`  Server running at http://127.0.0.1:${PORT}`);
 
-  const browser = await puppeteer.launch({
-    headless: false, // visible window — required for WebGL on Windows
-    defaultViewport: null,
+  const browser = await chromium.launch({
+    headless: true,
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
+      '--disable-web-security',
       '--enable-webgl',
       '--use-gl=angle',
       '--use-angle=swiftshader',
       '--enable-gpu-rasterization',
       '--ignore-gpu-blocklist',
-      '--window-size=1440,810',
     ],
   });
 
   const page = await browser.newPage();
-  await page.setViewport({ width: WIDTH, height: HEIGHT, deviceScaleFactor: 1 });
+  await page.setViewportSize({ width: WIDTH, height: HEIGHT });
 
-  // Log any page errors for debugging
   page.on('console', m => { if (m.type() === 'error') console.error('\n  Page error:', m.text()); });
 
   console.log('  Loading scene…');
   await page.goto(`http://127.0.0.1:${PORT}/animation-scene.html`, {
-    waitUntil: 'networkidle0',
+    waitUntil: 'networkidle',
     timeout: 60000,
   });
 
@@ -85,7 +87,7 @@ function bar(n, total, width = 40) {
   const start = Date.now();
 
   for (let i = 0; i < FRAMES; i++) {
-    await page.evaluate((n, total) => window.setFrame(n, total), i, FRAMES);
+    await page.evaluate(({ n, total }) => window.setFrame(n, total), { n: i, total: FRAMES });
     await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
 
     const file = path.join(OUTPUT_DIR, `frame_${String(i).padStart(3, '0')}.jpg`);
@@ -97,7 +99,7 @@ function bar(n, total, width = 40) {
   }
 
   const total = ((Date.now() - start) / 1000).toFixed(1);
-  console.log(`\n\n  Done! ${FRAMES} frames saved to /frames  (${total}s)\n`);
+  console.log(`\n\n  Done! ${FRAMES} frames saved to /public/frames  (${total}s)\n`);
 
   await browser.close();
   server.close();

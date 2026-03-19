@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 
-const TOTAL_FRAMES = 300
+const TOTAL_FRAMES = 600
 
 const SCENES = [
   { id: 0, eyebrow: 'Revamply',      title: <>Enter the<br /><span>System</span></>,                          sub: null,                                                                                       start: 0,   end: 55  },
