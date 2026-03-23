@@ -17,26 +17,23 @@ function pad(n: number) {
 }
 
 export default function ScrollDemoPage() {
-  const canvasRef   = useRef<HTMLCanvasElement>(null)
-  const stageRef    = useRef<HTMLDivElement>(null)
-  const hintRef     = useRef<HTMLDivElement>(null)
-  const sceneRefs   = useRef<(HTMLDivElement | null)[]>([])
-  const loaderRef   = useRef<HTMLDivElement>(null)
-  const barRef      = useRef<HTMLDivElement>(null)
-  const pctRef      = useRef<HTMLDivElement>(null)
+  const canvasRef  = useRef<HTMLCanvasElement>(null)
+  const stageRef   = useRef<HTMLDivElement>(null)
+  const hintRef    = useRef<HTMLDivElement>(null)
+  const sceneRefs  = useRef<(HTMLDivElement | null)[]>([])
 
   useEffect(() => {
-    const canvas  = canvasRef.current!
-    const ctx     = canvas.getContext('2d')!
-    const stage   = stageRef.current!
-    const hint    = hintRef.current!
-    const loader  = loaderRef.current!
+    const canvas = canvasRef.current!
+    const ctx    = canvas.getContext('2d')!
+    const stage  = stageRef.current!
+    const hint   = hintRef.current!
 
-    const frames: HTMLImageElement[] = []
-    let loaded       = 0
+    const frames: HTMLImageElement[] = new Array(TOTAL_FRAMES)
     let currentFrame = 0
     let displayFrame = 0
+    let lastDrawn    = -1
     let rafId: number
+    let started      = false
 
     function resize() {
       canvas.width  = window.innerWidth
@@ -46,8 +43,13 @@ export default function ScrollDemoPage() {
 
     function drawFrame(idx: number) {
       idx = Math.max(0, Math.min(TOTAL_FRAMES - 1, Math.round(idx)))
-      const img = frames[idx]
-      if (!img?.complete || !img.naturalWidth) return
+      // Walk back to the nearest loaded frame
+      let i = idx
+      while (i >= 0 && (!frames[i]?.complete || !frames[i].naturalWidth)) i--
+      if (i < 0) return
+      if (i === lastDrawn) return
+      lastDrawn = i
+      const img = frames[i]
       const cw = canvas.width, ch = canvas.height
       const iw = img.width,    ih = img.height
       const scale = Math.max(cw / iw, ch / ih)
@@ -72,8 +74,8 @@ export default function ScrollDemoPage() {
     }
 
     function onScroll() {
-      const rect    = stage.getBoundingClientRect()
-      const total   = stage.offsetHeight - window.innerHeight
+      const rect     = stage.getBoundingClientRect()
+      const total    = stage.offsetHeight - window.innerHeight
       const scrolled = -rect.top
       const progress = Math.max(0, Math.min(1, scrolled / total))
       currentFrame = progress * (TOTAL_FRAMES - 1)
@@ -87,36 +89,24 @@ export default function ScrollDemoPage() {
       updateScenes(displayFrame)
     }
 
-    function loadFrames() {
-      return new Promise<void>(resolve => {
-        for (let i = 0; i < TOTAL_FRAMES; i++) {
-          const img = new Image()
-          img.src = `/frames/frame_${pad(i)}.jpg`
-          img.onload = () => {
-            loaded++
-            const pct = Math.round((loaded / TOTAL_FRAMES) * 100)
-            if (barRef.current) barRef.current.style.width = pct + '%'
-            if (pctRef.current) pctRef.current.textContent = pct + '%'
-            if (loaded === TOTAL_FRAMES) resolve()
-          }
-          frames[i] = img
-        }
-      })
+    function startOnce() {
+      if (started) return
+      started = true
+      resize()
+      tick()
+      hint.classList.add('visible')
     }
 
-    resize()
+    // Load all frames; kick off animation as soon as frame 0 is ready
+    for (let i = 0; i < TOTAL_FRAMES; i++) {
+      const img = new Image()
+      img.src = `/frames/frame_${pad(i)}.jpg`
+      if (i === 0) img.onload = startOnce
+      frames[i] = img
+    }
+
     window.addEventListener('resize', resize)
     window.addEventListener('scroll', onScroll, { passive: true })
-
-    loadFrames().then(() => {
-      loader.style.opacity = '0'
-      setTimeout(() => {
-        loader.style.display = 'none'
-        hint.classList.add('visible')
-      }, 700)
-      drawFrame(0)
-      tick()
-    })
 
     return () => {
       window.removeEventListener('resize', resize)
@@ -128,20 +118,9 @@ export default function ScrollDemoPage() {
   return (
     <>
       <style>{`
-        .sd-loader {
-          position: fixed; inset: 0; z-index: 1000;
-          background: #000804;
-          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
-          transition: opacity .6s ease;
-        }
-        .sd-loader__label { font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.35); }
-        .sd-loader__bar-wrap { width: 220px; height: 2px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
-        .sd-loader__bar { height: 100%; width: 0%; background: #05ed99; box-shadow: 0 0 12px #05ed99; border-radius: 2px; transition: width .1s linear; }
-        .sd-loader__pct { font-size: 11px; color: rgba(5,237,153,0.6); font-variant-numeric: tabular-nums; }
-
         .sd-stage { position: relative; height: calc(100vh + 9000px); }
 
-        .sd-sticky { position: sticky; top: 0; height: 100vh; width: 100%; overflow: hidden; }
+        .sd-sticky { position: sticky; top: 0; height: 100vh; width: 100%; overflow: hidden; background: #000804; }
 
         .sd-canvas { display: block; width: 100%; height: 100%; object-fit: cover; }
 
@@ -182,15 +161,6 @@ export default function ScrollDemoPage() {
         .sd-after p { font-size: 17px; color: rgba(255,255,255,0.45); max-width: 520px; margin: 0 auto 40px; line-height: 1.6; }
         .sd-after a { display: inline-block; background: #05ed99; color: #000; font-weight: 700; padding: 14px 32px; border-radius: 100px; text-decoration: none; font-size: 14px; }
       `}</style>
-
-      {/* Loader */}
-      <div ref={loaderRef} className="sd-loader">
-        <div className="sd-loader__label">Initialising</div>
-        <div className="sd-loader__bar-wrap">
-          <div ref={barRef} className="sd-loader__bar" />
-        </div>
-        <div ref={pctRef} className="sd-loader__pct">0%</div>
-      </div>
 
       {/* Scroll Stage */}
       <div ref={stageRef} className="sd-stage">
