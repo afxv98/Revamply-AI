@@ -6,7 +6,7 @@ const http  = require('http');
 const fs    = require('fs');
 const path  = require('path');
 
-const FRAMES     = 600;
+const FRAMES     = 900;
 const WIDTH      = 1440;
 const HEIGHT     = 810;
 const QUALITY    = 88;

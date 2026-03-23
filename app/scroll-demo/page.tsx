@@ -3,13 +3,13 @@
 import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 
-const TOTAL_FRAMES = 600
+const TOTAL_FRAMES = 900
 
 const SCENES = [
-  { id: 0, eyebrow: 'Revamply',      title: <>Enter the<br /><span>System</span></>,                          sub: null,                                                                                       start: 0,   end: 55  },
-  { id: 1, eyebrow: 'The Problem',   title: <>Your Business Is Running on<br /><span>Outdated Infrastructure</span></>, sub: 'Manual workflows. Disconnected tools. Processes that only the owner understands.', start: 75,  end: 145 },
-  { id: 2, eyebrow: 'The Solution',  title: <>We Rebuild the<br /><span>Operating System</span></>,           sub: 'Intelligent automation. Connected systems. A business that runs without you.',              start: 170, end: 235 },
-  { id: 3, eyebrow: 'Ready?',        title: <>Modernize Your<br /><span>Operations</span></>,                 sub: null,                                                                                       cta: true, start: 260, end: 299 },
+  { id: 0, eyebrow: 'Revamply',      title: <>Enter the<br /><span>System</span></>,                                    sub: null,                                                                                       start: 0,   end: 165 },
+  { id: 1, eyebrow: 'The Problem',   title: <>Your Business Is Running on<br /><span>Outdated Infrastructure</span></>, sub: 'Manual workflows. Disconnected tools. Processes that only the owner understands.', start: 225, end: 435 },
+  { id: 2, eyebrow: 'The Solution',  title: <>We Rebuild the<br /><span>Operating System</span></>,                     sub: 'Intelligent automation. Connected systems. A business that runs without you.',              start: 510, end: 705 },
+  { id: 3, eyebrow: 'Ready?',        title: <>Modernize Your<br /><span>Operations</span></>,                           sub: null,                                                                                       cta: true, start: 780, end: 899 },
 ]
 
 function pad(n: number) {
@@ -139,7 +139,7 @@ export default function ScrollDemoPage() {
         .sd-loader__bar { height: 100%; width: 0%; background: #05ed99; box-shadow: 0 0 12px #05ed99; border-radius: 2px; transition: width .1s linear; }
         .sd-loader__pct { font-size: 11px; color: rgba(5,237,153,0.6); font-variant-numeric: tabular-nums; }
 
-        .sd-stage { position: relative; height: calc(100vh + 6000px); }
+        .sd-stage { position: relative; height: calc(100vh + 9000px); }
 
         .sd-sticky { position: sticky; top: 0; height: 100vh; width: 100%; overflow: hidden; }
 
